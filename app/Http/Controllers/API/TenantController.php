@@ -36,7 +36,7 @@ class TenantController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:191'],
             'host' => ['required', 'string', 'max:191', 'unique:tenants,host'],
-            'database' => ['required', 'string', 'max:191'],
+            'database' => ['required', 'string', 'max:191' , 'unique:tenants,database'],
             'username' => ['required', 'string', 'max:191'],
             'password' => ['required', 'string', 'max:191'],
             'email' => ['nullable', 'email'],
