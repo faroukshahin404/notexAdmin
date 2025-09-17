@@ -2,57 +2,37 @@
 
 namespace App\Services\AAPanel;
 
-use GuzzleHttp\Client;
+use App\Services\Remote\SSHService;
 
 class AAPanelClient
 {
-    protected Client $http;
-    protected string $baseUrl;
-    protected string $apiKey;
-
-    public function __construct()
-    {
-        $this->baseUrl = rtrim(config('aapanel.base_url'), '/');
-        $this->apiKey = (string) config('aapanel.api_key');
-        $this->http = new Client([
-            'base_uri' => $this->baseUrl,
-            'timeout' => 60,
-            'verify' => false,
-        ]);
-    }
+    public function __construct(protected SSHService $ssh = new SSHService()) {}
 
     public function getWebsite(string $domain): array
     {
-        $response = $this->http->get('/api/website/get');
-        return json_decode((string) $response->getBody(), true);
+        $domainArg = escapeshellarg($domain);
+        $cmd = "btcli site list | grep -i $domainArg || true";
+        return $this->ssh->run($cmd);
     }
 
     public function createWebsite(string $domain, string $path, string $runDir = '/public'): array
     {
-        $payload = [
-            'domain' => $domain,
-            'path' => $path,
-            'type' => 'PHP',
-            'run_path' => $runDir,
-            'php_version' => config('aapanel.php_version', '80'),
-            'access_log' => true,
-            'auth' => $this->apiKey,
-        ];
+        $root = rtrim($path, '/');
+        $publicPath = rtrim($root . '/' . ltrim($runDir, '/'), '/');
+        $phpVersion = escapeshellarg((string) config('aapanel.php_version', '80'));
+        $domainArg = escapeshellarg($domain);
+        $rootArg = escapeshellarg($root);
+        $publicArg = escapeshellarg($publicPath);
 
-        $response = $this->http->post('/api/website/create', ['form_params' => $payload]);
-        return json_decode((string) $response->getBody(), true);
+        $cmd = "mkdir -p $root && mkdir -p $publicPath && chown -R www:www $root; btcli site add --domain=$domainArg --path=$rootArg --php=$phpVersion --run=$publicArg || true";
+        return $this->ssh->run($cmd);
     }
 
     public function applySSL(string $domain): array
     {
-        $payload = [
-            'domain' => $domain,
-            'ssl_type' => 'lets',
-            'auth' => $this->apiKey,
-        ];
-
-        $response = $this->http->post('/api/ssl/apply', ['form_params' => $payload]);
-        return json_decode((string) $response->getBody(), true);
+        $domainArg = escapeshellarg($domain);
+        $cmd = "btcli ssl apply --domain=$domainArg --type=letsencrypt || bt ssl --domain $domainArg";
+        return $this->ssh->run($cmd);
     }
 }
 
