@@ -5,6 +5,13 @@ return [
     'api_key' => env('AAPANEL_API_KEY', 'rEujraRHzGSH3hn3UsRyjfdXyM6aomdO'),
     'php_version' => env('AAPANEL_PHP_VERSION', '80'),
     'site_root' => env('AAPANEL_SITE_ROOT', '/www/wwwroot/NoteX'),
+
+    // SSH settings (preferred over HTTP API)
+    'ssh_host' => env('AAPANEL_SSH_HOST'),
+    'ssh_port' => env('AAPANEL_SSH_PORT', 22),
+    'ssh_user' => env('AAPANEL_SSH_USER', 'root'),
+    'ssh_password' => env('AAPANEL_SSH_PASSWORD' , "d(/+G@QUeuU20,sER&G9"),
+    'use_sshpass' => env('AAPANEL_USE_SSHPASS', true),
 ];
 
 
