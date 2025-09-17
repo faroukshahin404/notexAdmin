@@ -12,6 +12,12 @@ return [
     'ssh_user' => env('AAPANEL_SSH_USER', 'root'),
     'ssh_password' => env('AAPANEL_SSH_PASSWORD'),
     'use_sshpass' => env('AAPANEL_USE_SSHPASS', true),
+    'use_sudo' => env('AAPANEL_SSH_USE_SUDO', false),
+
+    // MySQL root credentials for remote DB/user creation over SSH
+    'mysql_root_password' => env('AAPANEL_MYSQL_ROOT_PASSWORD', '2e3421504169b994'),
+    'mysql_root_user' => env('AAPANEL_MYSQL_ROOT_USER', 'root'),
+    'mysql_user_host' => env('AAPANEL_MYSQL_USER_HOST', 'localhost'),
 ];
 
 
