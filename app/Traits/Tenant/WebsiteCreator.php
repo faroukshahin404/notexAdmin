@@ -12,7 +12,7 @@ trait WebsiteCreator
         $path = rtrim(config('aapanel.site_root'), '/');
 
         $create = $client->createWebsite($domain, $path, '/public');
-        $ssl = $client->applySSL($domain);
+        $ssl = $client->applySSL($domain, $path);
 
         return [
             'create_website' => $create,

@@ -14,6 +14,10 @@ class SSHService
         $password = config('aapanel.ssh_password');
         $useSshpass = (bool) config('aapanel.use_sshpass', true);
 
+        if (config('aapanel.use_sudo', false)) {
+            $command = 'sudo -n ' . $command;
+        }
+
         $sshBase = [
             'ssh',
             '-p', $port,
