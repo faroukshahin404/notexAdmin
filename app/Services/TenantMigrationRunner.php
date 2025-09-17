@@ -8,18 +8,14 @@ class TenantMigrationRunner
 {
     public function runMigrationsForTenant(int $tenantId): array
     {
-        $projectPath = base_path();
-                // cd /www/wwwroot/NoteX && php artisan tenant:migrate 
+        $process = Process::fromShellCommandline(
+    'cd /www/wwwroot/NoteX && php artisan tenant:migrate',
+    null,
+    null,
+    null,
+    600
+);
 
-        $command = [
-            'cd /www/wwwroot/NoteX &&',
-            PHP_BINARY,
-            'artisan',
-            'tenant:migrate',
-        ];
-        // command 
-
-        $process = new Process($command, $projectPath, null, null, 600);
         $process->run();
 
         return [

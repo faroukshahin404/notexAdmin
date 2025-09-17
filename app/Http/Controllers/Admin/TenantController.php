@@ -56,7 +56,6 @@ class TenantController extends Controller
             ]));
 
             $migration = $this->migrator->runMigrationsForTenant($tenant->id);
-
             $tenant->is_installed = $migration['success'];
             if ($tenant->is_installed) {
                 $tenant->installation_date = \Carbon\CarbonImmutable::today();
@@ -69,7 +68,6 @@ class TenantController extends Controller
                 'site' => $site,
             ];
         });
-        dd('done');
 
         return redirect()
             ->route('admin.tenants.index')
