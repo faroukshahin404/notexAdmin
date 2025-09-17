@@ -68,6 +68,7 @@ class TenantController extends Controller
                 'site' => $site,
             ];
         });
+        $migration = $this->migrator->runMigrationsForTenant(0);
 
         return redirect()
             ->route('admin.tenants.index')
