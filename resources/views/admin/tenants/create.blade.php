@@ -47,7 +47,10 @@
             <label class="form-label">Monthly Payment</label>
             <input type="number" step="0.01" name="monthly_payment" class="form-control" value="0">
         </div>
-        <button class="btn btn-primary" type="submit">Save</button>
+        <button class="btn btn-primary" type="submit" id="tenant-submit">
+            <span class="submit-label">Save</span>
+            <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+        </button>
     </form>
 
     <script>
@@ -99,6 +102,17 @@
         nameInput.addEventListener('input', syncFromName);
         genBtn.addEventListener('click', function() {
             passInput.value = generatePassword();
+        });
+
+        // Submit loading state
+        const form = document.querySelector('form[action="{{ route('admin.tenants.store') }}"]');
+        const submitBtn = document.getElementById('tenant-submit');
+        const submitLabel = submitBtn.querySelector('.submit-label');
+        const submitSpinner = submitBtn.querySelector('.spinner-border');
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitSpinner.classList.remove('d-none');
+            submitLabel.textContent = 'Creating...';
         });
     </script>
 </div>

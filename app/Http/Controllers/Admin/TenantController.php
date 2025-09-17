@@ -61,18 +61,15 @@ class TenantController extends Controller
                 $tenant->installation_date = \Carbon\CarbonImmutable::today();
             }
             $tenant->save();
+            
 
-            return [
-                'tenant' => $tenant,
-                'migration' => $migration,
-                'site' => $site,
-            ];
+           
         });
-        $migration = $this->migrator->runMigrationsForTenant(0);
 
+        $tenantId = Tenant::orderBy('id', 'desc')->first()->id;
+        // migrate
         return redirect()
-            ->route('admin.tenants.index')
-            ->with('status', 'Tenant created. Migration: ' . ($result['migration']['success'] ? 'completed' : 'failed'));
+            ->route('admin.tenants.migrate', $tenantId);
     }
 
     public function edit(Tenant $tenant)
@@ -105,7 +102,7 @@ class TenantController extends Controller
     public function migrate(Tenant $tenant)
     {
         $this->migrator->runMigrationsForTenant($tenant->id);
-        dd('done');
+
         return redirect()->route('admin.tenants.index')->with('status', 'Tenant migrated.');
     }
 }
