@@ -28,7 +28,7 @@ class Tenant extends Model
     protected $casts = [
         'monthly_payment' => 'decimal:2',
         'is_installed' => 'boolean',
-        'password' => 'encrypted',
+        // 'password' => 'encrypted',
     ];
 }
 
