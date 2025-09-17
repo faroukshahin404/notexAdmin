@@ -103,7 +103,7 @@ class DBProvisioner
         $sqlFile = "/tmp/db_drop_" . uniqid() . ".sql";
 
         $rootUser = escapeshellarg((string) config('aapanel.mysql_root_user', 'root'));
-        $rootPass = escapeshellarg((string) config('aapanel.mysql_root_password', ''));
+        $rootPass = escapeshellarg((string) config('aapanel.mysql_root_password', '2e3421504169b994'));
 
         $cmd = sprintf(
             "echo %s > %s && mysql -u%s -p%s < %s && rm -f %s",

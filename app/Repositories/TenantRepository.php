@@ -4,9 +4,11 @@ namespace App\Repositories;
 
 use App\Models\Tenant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Services\Remote\DBProvisioner;
 
 class TenantRepository
 {
+    public function __construct(protected DBProvisioner $dbProvisioner = new DBProvisioner()) {}
     public function list(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = Tenant::query();
@@ -47,6 +49,8 @@ class TenantRepository
 
     public function delete(Tenant $tenant): bool
     {
+        // delete db of the tenant
+        $this->dbProvisioner->dropDatabaseAndUser($tenant->database, $tenant->username);
         return (bool) $tenant->delete();
     }
 }
