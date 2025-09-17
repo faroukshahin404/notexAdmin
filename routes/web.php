@@ -25,4 +25,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/tenants/{tenant}/edit', [AdminTenantController::class, 'edit'])->name('tenants.edit');
     Route::put('/tenants/{tenant}', [AdminTenantController::class, 'update'])->name('tenants.update');
     Route::delete('/tenants/{tenant}', [AdminTenantController::class, 'destroy'])->name('tenants.destroy');
+    // get website test function 
+    Route::get('/website', function () {
+        $client = new \App\Services\AAPanel\AAPanelClient();
+        $website = $client->getWebsite('test.com');
+        return response()->json($website);
+    })->name('website');
 });

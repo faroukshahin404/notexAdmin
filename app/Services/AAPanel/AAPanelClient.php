@@ -21,6 +21,12 @@ class AAPanelClient
         ]);
     }
 
+    public function getWebsite(string $domain): array
+    {
+        $response = $this->http->get('/api/website/get');
+        return json_decode((string) $response->getBody(), true);
+    }
+
     public function createWebsite(string $domain, string $path, string $runDir = '/public'): array
     {
         $payload = [
