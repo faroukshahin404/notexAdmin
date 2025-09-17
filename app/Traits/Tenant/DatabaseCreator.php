@@ -27,7 +27,8 @@ trait DatabaseCreator
             DB::statement("GRANT ALL PRIVILEGES ON `{$databaseName}`.* TO '{$username}'@'%'");
             DB::statement('FLUSH PRIVILEGES');
         }
-
+     
+     
         return [
             'database' => $databaseName,
             'username' => $username,

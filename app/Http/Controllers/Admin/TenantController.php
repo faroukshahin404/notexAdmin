@@ -69,6 +69,7 @@ class TenantController extends Controller
                 'site' => $site,
             ];
         });
+        dd('done');
 
         return redirect()
             ->route('admin.tenants.index')

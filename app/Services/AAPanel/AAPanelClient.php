@@ -3,7 +3,6 @@
 namespace App\Services\AAPanel;
 
 use App\Services\Remote\SSHService;
-use RuntimeException;
 
 class AAPanelClient
 {
@@ -23,61 +22,73 @@ class AAPanelClient
     }
 
     /**
-     * Create website: folder, vhost config, reload nginx.
+     * Create aaPanel-style website vhost exactly like exodus-erp.
      */
     public function createWebsite(string $domain, string $path, string $runDir = '/public'): array
-    {
-        $root = rtrim($path, '/');
-        $publicPath = rtrim($root . '/' . ltrim($runDir, '/'), '/');
-        $domainArg = escapeshellarg($domain);
+{
+    $root       = rtrim($path, '/');
+    $publicPath = rtrim($root . '/' . ltrim($runDir, '/'), '/');
 
-        // Build config file paths
-        $vhostPath = "/www/server/panel/vhost/nginx/$domain.conf";
-        $wellknown = "/www/server/panel/vhost/nginx/well-known/$domain.conf";
-        $logDir = "/www/wwwlogs";
+    $vhostPath  = "/www/server/panel/vhost/nginx/$domain.conf";
+    $wellknown  = "/www/server/panel/vhost/nginx/well-known/$domain.conf";
+    $rewrite    = "/www/server/panel/vhost/rewrite/$domain.conf";
+    $logDir     = "/www/wwwlogs";
 
-        $phpSock = (string) config('aapanel.php_socket', '/tmp/php-cgi-83.sock');
+    $phpConf    = (string) config('aapanel.php_conf', 'enable-php-83.conf');
 
-        // Command script
-        $cmd = <<<BASH
-mkdir -p $publicPath $logDir
+    // prepare the command with real values already substituted
+    $cmd = <<<BASH
+mkdir -p "$publicPath" "$logDir"
 mkdir -p /www/server/panel/vhost/nginx/well-known
-echo "" > $wellknown
+mkdir -p /www/server/panel/vhost/rewrite
+touch "$wellknown"
+touch "$rewrite"
 
-cat > $vhostPath <<EOF
-server {
+cat > "$vhostPath" <<EOF
+server
+{
     listen 80;
+    listen 443 ssl http2 ;
     server_name $domain;
+    index index.php index.html index.htm default.php default.htm default.html;
     root $publicPath;
-    index index.php index.html index.htm;
 
+    #CERT-APPLY-CHECK--START
     include $wellknown;
+    #CERT-APPLY-CHECK--END
+
+    #SSL-START
+    ssl_certificate    /www/server/panel/vhost/cert/$domain/fullchain.pem;
+    ssl_certificate_key    /www/server/panel/vhost/cert/$domain/privkey.pem;
+    #SSL-END
+
+    error_page 404 /404.html;
+    error_page 502 /502.html;
+
+    include $phpConf;
+    include $rewrite;
+
+    location ~ ^/(\\.user.ini|\\.htaccess|\\.git|\\.env|\\.svn|\\.project|LICENSE|README.md) {
+        return 404;
+    }
+
+    location ~ \\.well-known { allow all; }
 
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
     }
 
-    location ~ \\.php\$ {
-        include fastcgi_params;
-        fastcgi_pass unix:$phpSock;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        include pathinfo.conf;
-    }
-
-    location ~ /\\.well-known {
-        allow all;
-    }
-
-    access_log $logDir/$domain.log;
-    error_log $logDir/$domain.error.log;
+    access_log  $logDir/$domain.log;
+    error_log   $logDir/$domain.error.log;
 }
 EOF
 
 nginx -t && /etc/init.d/nginx reload
 BASH;
 
-        return $this->ssh->run($cmd);
-    }
+    return $this->ssh->run($cmd);
+}
+
 
     /**
      * Apply SSL using certbot (webroot mode).
@@ -93,59 +104,10 @@ BASH;
 
         return $this->ssh->run($cmd);
     }
-
-    /**
-     * Finalize vhost to enable HTTPS redirect + SSL.
-     */
-    public function enableSSLInVhost(string $domain, string $docRoot): array
+    public function createFullWebsite(string $domain, string $path, string $runDir = '/public'): array
     {
-        $vhostPath = "/www/server/panel/vhost/nginx/$domain.conf";
-        $wellknown = "/www/server/panel/vhost/nginx/well-known/$domain.conf";
-        $logDir = "/www/wwwlogs";
-        $phpSock = (string) config('aapanel.php_socket', '/tmp/php-cgi-83.sock');
+       
 
-        $cmd = <<<BASH
-cat > $vhostPath <<EOF
-server {
-    listen 80;
-    server_name $domain;
-    return 301 https://\$host\$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name $domain;
-    root $docRoot;
-    index index.php index.html index.htm;
-
-    ssl_certificate     /etc/letsencrypt/live/$domain/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/$domain/privkey.pem;
-
-    include $wellknown;
-
-    location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
-    }
-
-    location ~ \\.php\$ {
-        include fastcgi_params;
-        fastcgi_pass unix:$phpSock;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        include pathinfo.conf;
-    }
-
-    location ~ /\\.well-known {
-        allow all;
-    }
-
-    access_log $logDir/$domain.log;
-    error_log $logDir/$domain.error.log;
-}
-EOF
-
-nginx -t && /etc/init.d/nginx reload
-BASH;
-
-        return $this->ssh->run($cmd);
+        return [];
     }
 }

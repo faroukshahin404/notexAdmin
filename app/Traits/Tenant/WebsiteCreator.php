@@ -9,14 +9,13 @@ trait WebsiteCreator
     protected function setupWebsite(string $domain): array
     {
         $client = new AAPanelClient();
-        $path = rtrim(config('aapanel.site_root'), '/');
+        // $path = rtrim(config('aapanel.site_root'), '/');
 
-        $create = $client->createWebsite($domain, $path, '/public');
-        $ssl = $client->applySSL($domain, $path);
-
+        $result = $client->createFullWebsite($domain, '/www/wwwroot/NoteX');
+        // $ssl = $client->applySSL($domain, $path);
+        
         return [
-            'create_website' => $create,
-            'ssl' => $ssl,
+            'create_website' => $result,
         ];
     }
 }
