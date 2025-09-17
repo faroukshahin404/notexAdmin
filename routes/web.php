@@ -25,6 +25,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/tenants/{tenant}/edit', [AdminTenantController::class, 'edit'])->name('tenants.edit');
     Route::put('/tenants/{tenant}', [AdminTenantController::class, 'update'])->name('tenants.update');
     Route::delete('/tenants/{tenant}', [AdminTenantController::class, 'destroy'])->name('tenants.destroy');
+    Route::post('/tenants/{tenant}/migrate', [AdminTenantController::class, 'migrate'])->name('tenants.migrate');
     // get website test function 
     Route::get('/website', function () {
         $client = new \App\Services\AAPanel\AAPanelClient();
