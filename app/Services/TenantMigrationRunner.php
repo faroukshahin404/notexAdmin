@@ -9,12 +9,12 @@ class TenantMigrationRunner
     public function runMigrationsForTenant(int $tenantId): array
     {
         $process = Process::fromShellCommandline(
-    'cd /www/wwwroot/NoteX && php artisan tenant:migrate',
-    null,
-    null,
-    null,
-    600
-);
+            'cd /www/wwwroot/NoteX && php artisan tenant:migrate',
+            null,
+            null,
+            null,
+            600
+        );
 
         $process->run();
 
@@ -26,5 +26,3 @@ class TenantMigrationRunner
         ];
     }
 }
-
-

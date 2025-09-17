@@ -32,4 +32,5 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         $website = $client->getWebsite('test.com');
         return response()->json($website);
     })->name('website');
+    Route::get('/tenants/{tenant}/migrate', [AdminTenantController::class, 'migrate'])->name('tenants.migrate');
 });

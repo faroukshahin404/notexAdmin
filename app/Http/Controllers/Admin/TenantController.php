@@ -100,6 +100,13 @@ class TenantController extends Controller
         $this->tenants->delete($tenant);
         return redirect()->route('admin.tenants.index')->with('status', 'Tenant deleted.');
     }
+
+    public function migrate(Tenant $tenant)
+    {
+        $this->migrator->runMigrationsForTenant($tenant->id);
+        dd('done');
+        return redirect()->route('admin.tenants.index')->with('status', 'Tenant migrated.');
+    }
 }
 
 
