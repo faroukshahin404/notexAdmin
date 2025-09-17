@@ -11,7 +11,7 @@ class AAPanelClient
     public function getWebsite(string $domain): array
     {
         $domainArg = escapeshellarg($domain);
-        $cmd = "btcli site list | grep -i $domainArg || true";
+        $cmd = "bt site list | grep -i $domainArg || true";
         return $this->ssh->run($cmd);
     }
 
