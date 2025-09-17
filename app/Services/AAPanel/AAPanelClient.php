@@ -23,7 +23,7 @@ class AAPanelClient
 
     public function getWebsite(string $domain): array
     {
-        $response = $this->http->get('/api/website/get');
+        $response = $this->http->get('/site?action=GetSiteList');
         return json_decode((string) $response->getBody(), true);
     }
 
