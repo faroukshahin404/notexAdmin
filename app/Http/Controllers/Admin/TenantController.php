@@ -6,10 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Repositories\TenantRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Traits\Tenant\DatabaseCreator;
+use App\Traits\Tenant\WebsiteCreator;
+use App\Traits\Tenant\TenantRegistrar;
+use App\Services\TenantMigrationRunner;
 
 class TenantController extends Controller
 {
-    public function __construct(protected TenantRepository $tenants)
+    use DatabaseCreator, WebsiteCreator, TenantRegistrar;
+
+    public function __construct(protected TenantRepository $tenants, protected TenantMigrationRunner $migrator)
     {
     }
 
@@ -38,8 +45,34 @@ class TenantController extends Controller
             'monthly_payment' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $this->tenants->create($data);
-        return redirect()->route('admin.tenants.index')->with('status', 'Tenant created.');
+        $result = DB::transaction(function () use ($data) {
+            $db = $this->createTenantDatabase($data['database'], $data['username'], $data['password']);
+            $site = $this->setupWebsite($data['host']);
+
+            $tenant = $this->registerTenant(array_merge($data, [
+                'database' => $db['database'],
+                'username' => $db['username'],
+                'password' => $db['password'],
+            ]));
+
+            $migration = $this->migrator->runMigrationsForTenant($tenant->id);
+
+            $tenant->is_installed = $migration['success'];
+            if ($tenant->is_installed) {
+                $tenant->installation_date = \Carbon\CarbonImmutable::today();
+            }
+            $tenant->save();
+
+            return [
+                'tenant' => $tenant,
+                'migration' => $migration,
+                'site' => $site,
+            ];
+        });
+
+        return redirect()
+            ->route('admin.tenants.index')
+            ->with('status', 'Tenant created. Migration: ' . ($result['migration']['success'] ? 'completed' : 'failed'));
     }
 
     public function edit(Tenant $tenant)
