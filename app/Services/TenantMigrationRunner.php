@@ -9,12 +9,15 @@ class TenantMigrationRunner
     public function runMigrationsForTenant(int $tenantId): array
     {
         $projectPath = base_path();
+                // cd /www/wwwroot/NoteX && php artisan tenant:migrate 
+
         $command = [
+            'cd /www/wwwroot/NoteX &&',
             PHP_BINARY,
             'artisan',
             'tenant:migrate',
-            "--tenant={$tenantId}",
         ];
+        // command 
 
         $process = new Process($command, $projectPath, null, null, 600);
         $process->run();
